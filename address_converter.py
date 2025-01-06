@@ -1,6 +1,7 @@
 #? Description: This script geocodes the addresses of NYC restaurants using the OpenCage Geocoding API.
 #! NEED TO BE RUN THE FIRST TIME TO GET THE GEOCODED LOCATIONS FROM THE DOHMH_New_York_City_Restaurant_Inspection_Results.csv
 
+import sys
 import pandas as pd
 import requests
 import time
@@ -49,7 +50,11 @@ def get_coordinates(addrs):
             if data:
                 return data[0]['lat'], data[0]['lon']  # Return latitude and longitude
     except requests.exceptions.RequestException as e:
-        print(f"Error fetching data for address '{addrs}': {e}")
+        # Verify if we reached the rate limit by getting a 429 status code
+        if response.status_code == 429:
+            print("Rate limit exceeded. Please wait and try again later.")
+            sys.exit()
+        print("Error:", e)
     return None, None
 
 # Function to load progress from file
