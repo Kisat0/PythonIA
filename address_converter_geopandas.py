@@ -9,6 +9,8 @@ MAX_RETRIES = 3
 RETRY_DELAY = 2  # seconds
 CHUNK_SIZE = 100
 
+ROW_LIMIT = 5000
+
 # Function to construct address
 def construct_address(line):
     return f"{line['BUILDING']} {line['STREET']}, {line['BORO']}, NY {line['ZIPCODE']}"
@@ -42,7 +44,7 @@ df_location['LONGITUDE'] = None
 
 processed_rows = 0
 for start in range(0, len(df_location), CHUNK_SIZE):
-    if processed_rows >= 200:
+    if processed_rows >= ROW_LIMIT:
         break
 
     chunk = df_location.iloc[start:start + CHUNK_SIZE].copy()
