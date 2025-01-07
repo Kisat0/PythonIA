@@ -21,5 +21,23 @@ cleaned_df = merged_df.dropna(subset=['LATITUDE', 'LONGITUDE'])
 
 # Okay now we select the columns we want to keep 
 
-df_selected = cleaned_df[['']]
+df_selected = cleaned_df[['LONGITUDE', 'LATITUDE', 'INSPECTION DATE', 'ACTION', 'CRITICAL FLAG', 'SCORE']]
 
+# in inspection date just keep the year
+df_selected['INSPECTION DATE'] = pd.to_datetime(df_selected['INSPECTION DATE'])
+df_selected['INSPECTION DATE'] = df_selected['INSPECTION DATE'].dt.year
+
+print(df_selected['INSPECTION DATE'])
+
+# Créer un dictionnaire de mappage
+action_mapping = {
+    'Violations were cited in the following area(s).': 1,
+    'No violations were recorded at the time of this inspection.': 0,
+    'Establishment re-opened by DOHMH': 2,
+    'Establishment re-closed by DOHMH': 3,
+    'Establishment Closed by DOHMH. Violations were cited in the following area(s) and those requiring immediate action were addressed.': 4,
+    'Missing': -1
+}
+
+# Appliquer le mappage à la colonne Action
+df_selected['Action_Code'] = df_selected['Action'].map(action_mapping)
