@@ -41,3 +41,13 @@ action_mapping = {
 
 # Appliquer le mappage à la colonne Action
 df_selected['Action_Code'] = df_selected['Action'].map(action_mapping)
+
+# Créer un dictionnaire de mappage
+critical_flag_mapping = {
+    'Critical': 1,
+    'Not Critical': 0,
+    'Not Applicable': -1
+}
+
+# Appliquer le mappage à la colonne Critical Flag
+df_selected['Critical_Flag_Code'] = df_selected['Critical Flag'].map(critical_flag_mapping)
