@@ -34,7 +34,7 @@ def geocode_address(address):
                 return None, None
 
 df_location = pd.read_csv(INPUT_FILE)
-df_location = df_location[['BORO', 'STREET', 'BUILDING', 'ZIPCODE', 'CUISINE DESCRIPTION', 'GRADE', 'PHONE', 'INSPECTION DATE', 'VIOLATION CODE', 'VIOLATION DESCRIPTION', 'SCORE']]
+df_location = df_location[['DBA','BORO', 'STREET', 'BUILDING', 'ZIPCODE', 'CUISINE DESCRIPTION', 'GRADE', 'PHONE', 'INSPECTION DATE', 'VIOLATION CODE', 'VIOLATION DESCRIPTION', 'SCORE', 'ACTION','CRITICAL FLAG']]
 
 # Drop rows with missing values in location fields
 df_location = df_location.dropna(subset=['BORO', 'STREET', 'BUILDING', 'ZIPCODE'])
@@ -66,26 +66,35 @@ for start in range(START_INDEX, len(df_location), CHUNK_SIZE):
 
 # Create json structure
 features = []
+existing_restaurants = set()
+
 for _, row in df_location.iterrows():
     if pd.notnull(row['LATITUDE']) and pd.notnull(row['LONGITUDE']):
-        feature = {
-            "type": "Feature",
-            "geometry": {
-                "type": "Point",
-                "coordinates": [row['LONGITUDE'], row['LATITUDE']]
-            },
-            "properties": {
-                "name": f"Restaurant {row.name}",
-                "cuisine": row['CUISINE DESCRIPTION'],
-                "address": row['BUILDING'] + ' ' + row['STREET'] + ', ' + row['BORO'] + ', NY ' + str(row['ZIPCODE']),
-                "phone": row['PHONE'],
-                "inspection_date": row['INSPECTION DATE'],
-                "violation_code": row['VIOLATION CODE'],
-                "violation_description": row['VIOLATION DESCRIPTION'],
-                "score": row['SCORE'],
+        # Create a unique identifier for the restaurant
+        restaurant_id = (row['DBA'], row['LATITUDE'], row['LONGITUDE'])
+        
+        # Verify if the restaurant is not already in the list
+        if restaurant_id not in existing_restaurants:
+            feature = {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [row['LONGITUDE'], row['LATITUDE']]
+                },
+                "properties": {
+                    "name": row['DBA'],
+                    "cuisine": row['CUISINE DESCRIPTION'],
+                    "address": row['BUILDING'] + ' ' + row['STREET'] + ', ' + row['BORO'] + ', NY ' + str(row['ZIPCODE']),
+                    "phone": row['PHONE'],
+                    "inspection_date": row['INSPECTION DATE'],
+                    "violation_code": row['VIOLATION CODE'],
+                    "violation_description": row['VIOLATION DESCRIPTION'],
+                    "score": row['SCORE'],
+                }
             }
-        }
-        features.append(feature)
+            
+            features.append(feature)
+            existing_restaurants.add(restaurant_id)
 
 geojson = {
     "type": "FeatureCollection",
