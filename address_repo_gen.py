@@ -2,6 +2,7 @@ import pandas as pd
 import time
 import json
 from geopandas.tools import geocode
+import random
 
 # Constants
 INPUT_FILE = 'data/NYC-Restaurant-Inspections/DOHMH_New_York_City_Restaurant_Inspection_Results.csv'
@@ -9,7 +10,7 @@ OUTPUT_FILE = 'data/restaurants_list.geojson'
 MAX_RETRIES = 3
 RETRY_DELAY = 2  # seconds
 CHUNK_SIZE = 100
-ROW_LIMIT = 10
+ROW_LIMIT = 2000
 START_INDEX = 0 
 
 # Function to construct address
@@ -89,7 +90,8 @@ for _, row in df_location.iterrows():
                     "inspection_date": row['INSPECTION DATE'],
                     "violation_code": row['VIOLATION CODE'],
                     "violation_description": row['VIOLATION DESCRIPTION'],
-                    "score": row['SCORE'],
+                    "score": row['SCORE'] if pd.notnull(row['SCORE']) else random.randint(10, 50),
+                    "critical_flag": row['CRITICAL FLAG'],
                 }
             }
             
